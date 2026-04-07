@@ -149,6 +149,7 @@ export function parseTask(row: Record<string, unknown>): Task {
   return {
     ...row,
     done: parseBool(row.done),
+    due_date: row.due_date ? String(row.due_date) : null,
     created_at: String(row.created_at),
   } as Task
 }
