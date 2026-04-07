@@ -4,7 +4,19 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 
+/* ─── DEFAULT: Light theme ────────────────────────────────── */
 :root {
+  --bar-height: 0px;
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --accent: #0369A1;
+  --text: #0F172A;
+  --muted: #64748B;
+  --border: #E2E8F0;
+}
+
+/* ─── Dark theme override ─────────────────────────────────── */
+[data-theme="dark"] {
   --bg: #0A0A0F;
   --surface: #13131A;
   --accent: #00D4FF;
@@ -13,40 +25,65 @@
   --border: #1E293B;
 }
 
-[data-theme="light"] {
-  --bg: #F8FAFC;
-  --surface: #FFFFFF;
-  --accent: #0284C7;
-  --text: #0F172A;
-  --muted: #64748B;
-  --border: #E2E8F0;
+[data-theme="dark"] .bg-bg             { background-color: #0A0A0F !important; }
+[data-theme="dark"] .bg-surface        { background-color: #13131A !important; }
+[data-theme="dark"] .text-text-primary { color: #F1F5F9 !important; }
+[data-theme="dark"] .text-text-muted   { color: #64748B !important; }
+[data-theme="dark"] .text-accent       { color: #00D4FF !important; }
+[data-theme="dark"] .stroke-accent     { stroke: #00D4FF !important; }
+[data-theme="dark"] .border-border     { border-color: #1E293B !important; }
+[data-theme="dark"] .border-accent     { border-color: #00D4FF !important; }
+[data-theme="dark"] .bg-accent         { background-color: #00D4FF !important; }
+[data-theme="dark"] .bg-accent\/10     { background-color: rgba(0,212,255,0.10) !important; }
+[data-theme="dark"] .bg-accent\/5      { background-color: rgba(0,212,255,0.05) !important; }
+[data-theme="dark"] .border-accent\/20 { border-color: rgba(0,212,255,0.20) !important; }
+[data-theme="dark"] .border-accent\/30 { border-color: rgba(0,212,255,0.30) !important; }
+[data-theme="dark"] .text-accent\/70   { color: rgba(0,212,255,0.70) !important; }
+[data-theme="dark"] .shadow-glow       { box-shadow: 0 0 24px rgba(0,212,255,0.3) !important; }
+[data-theme="dark"] .shadow-glow-lg    { box-shadow: 0 0 40px rgba(0,212,255,0.4) !important; }
+[data-theme="dark"] .bg-bg\/80         { background-color: rgba(10,10,15,0.88) !important; }
+[data-theme="dark"] .bg-bg\/97         { background-color: rgba(10,10,15,0.97) !important; }
+[data-theme="dark"] body::before       { opacity: 0.035; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #1E293B; }
+
+/* ─── Theme-aware component helpers ──────────────────────── */
+
+/* Hero dots grid */
+.hero-grid {
+  background-image: radial-gradient(circle, #0369A1 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.06;
+}
+[data-theme="dark"] .hero-grid {
+  background-image: radial-gradient(circle, #00D4FF 1px, transparent 1px);
+  opacity: 0.08;
 }
 
-/* Tailwind color overrides for light theme */
-[data-theme="light"] .bg-bg          { background-color: #F8FAFC !important; }
-[data-theme="light"] .bg-surface     { background-color: #FFFFFF !important; }
-[data-theme="light"] .text-text-primary { color: #0F172A !important; }
-[data-theme="light"] .text-text-muted   { color: #64748B !important; }
-[data-theme="light"] .text-accent    { color: #0284C7 !important; }
-[data-theme="light"] .stroke-accent  { stroke: #0284C7 !important; }
-[data-theme="light"] .border-border  { border-color: #E2E8F0 !important; }
-[data-theme="light"] .border-accent  { border-color: #0284C7 !important; }
-[data-theme="light"] .bg-accent      { background-color: #0284C7 !important; }
-[data-theme="light"] .bg-accent\/10  { background-color: rgba(2,132,199,0.10) !important; }
-[data-theme="light"] .bg-accent\/5   { background-color: rgba(2,132,199,0.05) !important; }
-[data-theme="light"] .border-accent\/20 { border-color: rgba(2,132,199,0.20) !important; }
-[data-theme="light"] .border-accent\/30 { border-color: rgba(2,132,199,0.30) !important; }
-[data-theme="light"] .text-accent\/70   { color: rgba(2,132,199,0.70) !important; }
-[data-theme="light"] .shadow-glow    { box-shadow: 0 0 24px rgba(2,132,199,0.25) !important; }
-[data-theme="light"] .shadow-glow-lg { box-shadow: 0 0 40px rgba(2,132,199,0.35) !important; }
+/* Hero radial glow */
+.hero-glow {
+  background: radial-gradient(ellipse at center, rgba(3,105,161,0.08) 0%, transparent 70%);
+}
+[data-theme="dark"] .hero-glow {
+  background: radial-gradient(ellipse at center, rgba(0,212,255,0.12) 0%, transparent 70%);
+}
 
-/* Nav blur overlay in light mode */
-[data-theme="light"] .bg-bg\/80 { background-color: rgba(248,250,252,0.88) !important; }
-[data-theme="light"] .bg-bg\/97 { background-color: rgba(248,250,252,0.97) !important; }
+/* Hero accent text glow */
+.hero-accent-glow {
+  text-shadow: 0 0 30px rgba(3,105,161,0.3);
+}
+[data-theme="dark"] .hero-accent-glow {
+  text-shadow: 0 0 40px rgba(0,212,255,0.5);
+}
 
-/* Noise overlay: invisible on white */
-[data-theme="light"] body::before { opacity: 0; }
+/* RoadmapCTA glow */
+.roadmap-glow {
+  background: radial-gradient(ellipse at 50% 0%, rgba(3,105,161,0.06) 0%, transparent 70%);
+}
+[data-theme="dark"] .roadmap-glow {
+  background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.07) 0%, transparent 70%);
+}
 
+/* ─── Base styles ─────────────────────────────────────────── */
 html { scroll-behavior: smooth; }
 
 body {
@@ -56,19 +93,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Thin scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
 
-/* Noise overlay */
+/* Noise overlay — hidden in light mode, enabled in dark */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.035;
+  opacity: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-size: 256px 256px;
 }

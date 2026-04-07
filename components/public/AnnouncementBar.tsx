@@ -26,7 +26,8 @@ export default function AnnouncementBar() {
     <div
       className="fixed left-0 right-0 z-[60] bg-bg border-b-2 border-accent flex items-center justify-between px-4 md:px-6"
       style={{ top: 0, height: BAR_HEIGHT }}
-      role="banner"
+      role="alert"
+      aria-live="polite"
     >
       <div className="flex-1 flex items-center justify-center gap-3 md:gap-6 font-mono text-[10px] md:text-xs text-text-muted flex-wrap">
         <span className="opacity-50 hidden sm:inline">[ ÉDITION AVRIL ]</span>
@@ -48,7 +49,7 @@ export default function AnnouncementBar() {
         className="text-text-muted hover:text-text-primary transition-colors ml-3 flex-shrink-0 text-base leading-none cursor-pointer bg-transparent border-none"
         aria-label="Fermer le bandeau"
       >
-        ×
+        <span aria-hidden="true">×</span>
       </button>
     </div>
   )
