@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Save, Trash2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
 import type { PlatformLink } from '@/lib/types'
 import ConfirmModal from '@/components/admin/ConfirmModal'
 import { toast } from '@/components/admin/Toast'
@@ -26,13 +25,10 @@ export default function LinksPage() {
   const fetchLinks = useCallback(async () => {
     setLoading(true)
     try {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('platform_links')
-        .select('*')
-        .order('sort_order')
-      if (error) throw error
-      if (data && data.length > 0) {
+      const res = await fetch('/api/admin/links')
+      if (!res.ok) throw new Error()
+      const data: PlatformLink[] = await res.json()
+      if (data.length > 0) {
         setLinks(data.map((l) => ({ ...l, _key: l.id })))
       } else {
         setLinks(defaultLinks.map((l, i) => ({ ...l, _new: true, _key: `new-${i}` })))
@@ -54,16 +50,7 @@ export default function LinksPage() {
     const newKey = `new-${Date.now()}`
     setLinks((prev) => [
       ...prev,
-      {
-        platform: '',
-        label: '',
-        url: '',
-        icon: 'other',
-        visible: true,
-        sort_order: prev.length + 1,
-        _new: true,
-        _key: newKey,
-      },
+      { platform: '', label: '', url: '', icon: 'other', visible: true, sort_order: prev.length + 1, _new: true, _key: newKey },
     ])
   }
 
@@ -81,9 +68,8 @@ export default function LinksPage() {
     const link = links.find((l) => l._key === deleteTarget)
     if (!link?.id) return
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from('platform_links').delete().eq('id', link.id)
-      if (error) throw error
+      const res = await fetch(`/api/admin/links/${link.id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
       toast.success('Lien supprimé')
       setDeleteTarget(null)
       setLinks((prev) => prev.filter((l) => l._key !== deleteTarget))
@@ -95,25 +81,30 @@ export default function LinksPage() {
   const handleSaveAll = async () => {
     setSaving(true)
     try {
-      const supabase = createClient()
-      const toUpsert = links
-        .filter((l) => l.platform?.trim())
-        .map((l, i) => ({
-          id: l._new ? undefined : l.id,
+      const toSave = links.filter((l) => l.platform?.trim())
+
+      for (const [i, l] of toSave.entries()) {
+        const body = {
           platform: l.platform || '',
           label: l.label || '',
           url: l.url || '',
           icon: l.icon || 'other',
           visible: l.visible !== false,
           sort_order: i + 1,
-        }))
+        }
 
-      for (const item of toUpsert) {
-        if (item.id) {
-          await supabase.from('platform_links').update(item).eq('id', item.id)
+        if (l._new) {
+          await fetch('/api/admin/links', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
         } else {
-          const { id: _removed, ...insertData } = item as typeof item & { id?: string }
-          await supabase.from('platform_links').insert(insertData)
+          await fetch(`/api/admin/links/${l.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
         }
       }
 
@@ -136,7 +127,6 @@ export default function LinksPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <h2 className="font-syne font-bold text-admin-text text-xl">Liens & Plateformes</h2>
         <div className="flex gap-3">
@@ -158,7 +148,6 @@ export default function LinksPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-xl border border-admin-border overflow-hidden">
         <table className="w-full">
           <thead>

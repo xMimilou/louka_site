@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Plus, Search, Eye, EyeOff, Pencil, Trash2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
 import type { Article } from '@/lib/types'
 import ConfirmModal from '@/components/admin/ConfirmModal'
 import { toast } from '@/components/admin/Toast'
@@ -37,12 +36,9 @@ export default function ArticlesPage() {
   const fetchArticles = useCallback(async () => {
     setLoading(true)
     try {
-      const supabase = createClient()
-      let query = supabase.from('articles').select('*').order('created_at', { ascending: false })
-      if (filter !== 'all') query = query.eq('status', filter)
-      const { data, error } = await query
-      if (error) throw error
-      setArticles(data || [])
+      const res = await fetch(`/api/admin/articles?status=${filter}`)
+      if (!res.ok) throw new Error()
+      setArticles(await res.json())
     } catch {
       toast.error('Erreur lors du chargement des articles')
     } finally {
@@ -55,9 +51,8 @@ export default function ArticlesPage() {
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from('articles').delete().eq('id', deleteTarget.id)
-      if (error) throw error
+      const res = await fetch(`/api/admin/articles/${deleteTarget.id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
       toast.success('Article supprimé')
       setDeleteTarget(null)
       fetchArticles()
@@ -69,15 +64,16 @@ export default function ArticlesPage() {
   const handleToggleStatus = async (article: Article) => {
     const newStatus: Article['status'] = article.status === 'published' ? 'draft' : 'published'
     try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('articles')
-        .update({
+      const res = await fetch(`/api/admin/articles/${article.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...article,
           status: newStatus,
           published_at: newStatus === 'published' ? new Date().toISOString() : null,
-        })
-        .eq('id', article.id)
-      if (error) throw error
+        }),
+      })
+      if (!res.ok) throw new Error()
       toast.success(newStatus === 'published' ? 'Article publié !' : 'Article dépublié')
       fetchArticles()
     } catch {
@@ -102,7 +98,6 @@ export default function ArticlesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <h2 className="font-syne font-bold text-admin-text text-xl">Articles & Ressources</h2>
@@ -119,7 +114,6 @@ export default function ArticlesPage() {
         </Link>
       </div>
 
-      {/* Filters */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex gap-1 p-1 bg-admin-bg border border-admin-border rounded-xl">
           {tabs.map((tab) => (
@@ -149,7 +143,6 @@ export default function ArticlesPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-xl border border-admin-border overflow-hidden">
         {loading ? (
           <div className="p-12 text-center">
@@ -185,10 +178,7 @@ export default function ArticlesPage() {
             </thead>
             <tbody className="divide-y divide-admin-border">
               {filtered.map((article) => (
-                <tr
-                  key={article.id}
-                  className="hover:bg-admin-surface transition-colors"
-                >
+                <tr key={article.id} className="hover:bg-admin-surface transition-colors">
                   <td className="px-4 py-3">
                     <div>
                       <p className="font-dm text-sm text-admin-text font-medium truncate max-w-xs">{article.title}</p>

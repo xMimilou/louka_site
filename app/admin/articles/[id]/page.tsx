@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { ArrowLeft, Save, Globe, Clock } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
 import type { Article } from '@/lib/types'
 import { toast } from '@/components/admin/Toast'
 import FileUpload from '@/components/admin/FileUpload'
@@ -62,10 +61,9 @@ export default function ArticleEditorPage({ params }: PageProps) {
     if (isNew) return
     const fetchArticle = async () => {
       try {
-        const supabase = createClient()
-        const { data, error } = await supabase.from('articles').select('*').eq('id', id).single()
-        if (error) throw error
-        setArticle(data)
+        const res = await fetch(`/api/admin/articles/${id}`)
+        if (!res.ok) throw new Error()
+        setArticle(await res.json())
         setSlugEdited(true)
       } catch {
         toast.error('Article introuvable')
@@ -107,30 +105,30 @@ export default function ArticleEditorPage({ params }: PageProps) {
 
     setSaving(true)
     try {
-      const supabase = createClient()
       const now = new Date().toISOString()
       const payload = {
         ...article,
         status: publish ? 'published' : (article.status || 'draft'),
         published_at: publish && !article.published_at ? now : article.published_at,
-        updated_at: now,
       }
 
       if (isNew) {
-        const { data, error } = await supabase
-          .from('articles')
-          .insert({ ...payload, created_at: now })
-          .select()
-          .single()
-        if (error) throw error
+        const res = await fetch('/api/admin/articles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error()
+        const data = await res.json()
         toast.success(publish ? 'Article publié !' : 'Brouillon sauvegardé')
         router.push(`/admin/articles/${data.id}`)
       } else {
-        const { error } = await supabase
-          .from('articles')
-          .update(payload)
-          .eq('id', id)
-        if (error) throw error
+        const res = await fetch(`/api/admin/articles/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error()
         toast.success(publish ? 'Article publié !' : 'Sauvegardé')
         setArticle((prev) => ({ ...prev, ...payload }))
       }

@@ -5,8 +5,7 @@ export default function RoadmapCTA() {
         <div className="bg-surface border border-accent/20 rounded-2xl p-10 text-center relative overflow-hidden">
           {/* Glow */}
           <div
-            className="absolute inset-0 rounded-2xl pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.07) 0%, transparent 70%)' }}
+            className="roadmap-glow absolute inset-0 rounded-2xl pointer-events-none"
             aria-hidden="true"
           />
 

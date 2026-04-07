@@ -1,5 +1,4 @@
-// app/page.tsx
-import { createClient } from '@/lib/supabase-server'
+import pool from '@/lib/db'
 import type { PlatformLink } from '@/lib/types'
 import Nav from '@/components/public/Nav'
 import AnnouncementBar from '@/components/public/AnnouncementBar'
@@ -24,15 +23,10 @@ export default async function HomePage() {
   let platforms: PlatformLink[] = staticPlatforms
 
   try {
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://your-project.supabase.co') {
-      const supabase = await createClient()
-      const { data: dbPlatforms } = await supabase
-        .from('platform_links')
-        .select('*')
-        .eq('visible', true)
-        .order('sort_order')
-      if (dbPlatforms && dbPlatforms.length > 0) platforms = dbPlatforms
-    }
+    const [rows] = await pool.execute(
+      'SELECT * FROM platform_links WHERE visible = 1 ORDER BY sort_order'
+    ) as [PlatformLink[], unknown]
+    if (rows.length > 0) platforms = rows
   } catch {
     // Use static fallback
   }

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, X, GripVertical, ExternalLink, Github } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
 import type { Project } from '@/lib/types'
 import ConfirmModal from '@/components/admin/ConfirmModal'
 import { toast } from '@/components/admin/Toast'
@@ -44,13 +43,9 @@ export default function ProjectsPage() {
   const fetchProjects = useCallback(async () => {
     setLoading(true)
     try {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .order('sort_order')
-      if (error) throw error
-      setProjects(data || [])
+      const res = await fetch('/api/admin/projects')
+      if (!res.ok) throw new Error()
+      setProjects(await res.json())
     } catch {
       toast.error('Erreur lors du chargement')
     } finally {
@@ -84,20 +79,21 @@ export default function ProjectsPage() {
     }
     setSaving(true)
     try {
-      const supabase = createClient()
       if (isNew) {
-        const { error } = await supabase.from('projects').insert({
-          ...editTarget,
-          created_at: new Date().toISOString(),
+        const res = await fetch('/api/admin/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editTarget),
         })
-        if (error) throw error
+        if (!res.ok) throw new Error()
         toast.success('Projet créé !')
       } else {
-        const { error } = await supabase
-          .from('projects')
-          .update(editTarget)
-          .eq('id', editTarget.id)
-        if (error) throw error
+        const res = await fetch(`/api/admin/projects/${editTarget.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editTarget),
+        })
+        if (!res.ok) throw new Error()
         toast.success('Projet mis à jour !')
       }
       closeEdit()
@@ -112,9 +108,8 @@ export default function ProjectsPage() {
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from('projects').delete().eq('id', deleteTarget.id)
-      if (error) throw error
+      const res = await fetch(`/api/admin/projects/${deleteTarget.id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
       toast.success('Projet supprimé')
       setDeleteTarget(null)
       fetchProjects()
@@ -125,12 +120,12 @@ export default function ProjectsPage() {
 
   const handleToggleVisible = async (project: Project) => {
     try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('projects')
-        .update({ visible: !project.visible })
-        .eq('id', project.id)
-      if (error) throw error
+      const res = await fetch(`/api/admin/projects/${project.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...project, visible: !project.visible }),
+      })
+      if (!res.ok) throw new Error()
       toast.success(project.visible ? 'Projet masqué' : 'Projet affiché')
       fetchProjects()
     } catch {

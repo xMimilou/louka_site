@@ -2,13 +2,10 @@
 
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload, X, File } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
+import { Upload, File } from 'lucide-react'
 import { toast } from './Toast'
 
 interface FileUploadProps {
-  bucket?: string
-  folder?: string
   accept?: Record<string, string[]>
   maxSize?: number
   onUploaded: (url: string, fileName: string) => void
@@ -17,8 +14,6 @@ interface FileUploadProps {
 }
 
 export default function FileUpload({
-  bucket = 'uploads',
-  folder = '',
   accept = {
     'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
     'application/pdf': ['.pdf'],
@@ -29,7 +24,7 @@ export default function FileUpload({
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
     'text/csv': ['.csv'],
   },
-  maxSize = 10 * 1024 * 1024, // 10MB
+  maxSize = 10 * 1024 * 1024,
   onUploaded,
   label = 'Déposer un fichier ici',
   currentUrl,
@@ -43,40 +38,28 @@ export default function FileUpload({
     if (!file) return
 
     setUploading(true)
-    setProgress(10)
+    setProgress(30)
 
     try {
-      const supabase = createClient()
-      const ext = file.name.split('.').pop()
-      const baseName = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-z0-9]/gi, '-').toLowerCase()
-      const uniqueName = `${folder ? folder + '/' : ''}${baseName}-${Date.now()}.${ext}`
+      const formData = new FormData()
+      formData.append('file', file)
 
-      setProgress(30)
-
-      const { error } = await supabase.storage
-        .from(bucket)
-        .upload(uniqueName, file, { upsert: true })
-
-      if (error) throw error
-
-      setProgress(80)
-
-      const { data: urlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(uniqueName)
+      setProgress(60)
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData })
+      if (!res.ok) throw new Error('Upload failed')
+      const { url } = await res.json()
 
       setProgress(100)
       setFileName(file.name)
-      onUploaded(urlData.publicUrl, file.name)
+      onUploaded(url, file.name)
       toast.success('Fichier uploadé avec succès !')
-    } catch (err) {
+    } catch {
       toast.error("Erreur lors de l'upload")
-      console.error(err)
     } finally {
       setUploading(false)
       setProgress(0)
     }
-  }, [bucket, folder, onUploaded])
+  }, [onUploaded])
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
@@ -101,10 +84,7 @@ export default function FileUpload({
           <div className="space-y-3">
             <div className="inline-block w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
             <div className="w-full bg-admin-border rounded-full h-1.5">
-              <div
-                className="bg-accent h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
+              <div className="bg-accent h-1.5 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
             <p className="font-dm text-sm text-admin-muted">Upload en cours... {progress}%</p>
           </div>
@@ -112,9 +92,7 @@ export default function FileUpload({
           <div className="space-y-2">
             <Upload size={24} className="mx-auto text-admin-muted" aria-hidden="true" />
             <p className="font-dm text-sm text-admin-muted">{label}</p>
-            <p className="font-dm text-xs text-admin-muted opacity-60">
-              ou cliquez pour sélectionner
-            </p>
+            <p className="font-dm text-xs text-admin-muted opacity-60">ou cliquez pour sélectionner</p>
           </div>
         )}
       </div>

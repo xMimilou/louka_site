@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Save } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
 import { toast } from '@/components/admin/Toast'
 
 interface SettingField {
@@ -70,16 +69,10 @@ export default function SettingsPage() {
   const fetchSettings = useCallback(async () => {
     setLoading(true)
     try {
-      const supabase = createClient()
-      const { data, error } = await supabase.from('settings').select('*')
-      if (error) throw error
-      if (data) {
-        const map: Record<string, string> = { ...defaultValues }
-        data.forEach((row: { key: string; value: string }) => {
-          map[row.key] = row.value
-        })
-        setValues(map)
-      }
+      const res = await fetch('/api/admin/settings')
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      setValues({ ...defaultValues, ...data })
     } catch {
       // Use defaults
     } finally {
@@ -92,14 +85,12 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      const supabase = createClient()
-      const upserts = Object.entries(values).map(([key, value]) => ({ key, value }))
-
-      const { error } = await supabase
-        .from('settings')
-        .upsert(upserts, { onConflict: 'key' })
-
-      if (error) throw error
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      })
+      if (!res.ok) throw new Error()
       toast.success('Paramètres sauvegardés !')
     } catch {
       toast.error('Erreur lors de la sauvegarde')

@@ -1,5 +1,6 @@
-import { createClient } from '@/lib/supabase-server'
+import pool from '@/lib/db'
 import type { Article } from '@/lib/types'
+import { parseArticle } from '@/lib/db-parse'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Nav from '@/components/public/Nav'
@@ -59,27 +60,17 @@ export default async function ArticlePage({ params }: PageProps) {
   let article: Article | null = null
 
   try {
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://your-project.supabase.co') {
-      const supabase = await createClient()
-      const { data } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .single()
-
-      article = data
-    } else {
-      // Use static fallback if slug matches
-      if (slug === staticArticle.slug) {
-        article = staticArticle
-      }
-    }
+    const [rows] = await pool.execute(
+      'SELECT * FROM articles WHERE slug = ? AND status = ? LIMIT 1',
+      [slug, 'published']
+    ) as [Record<string, unknown>[], unknown]
+    if (rows.length > 0) article = parseArticle(rows[0])
   } catch {
-    // Fall back to static if slug matches
-    if (slug === staticArticle.slug) {
-      article = staticArticle
-    }
+    // fall back to static
+  }
+
+  if (!article && slug === staticArticle.slug) {
+    article = staticArticle
   }
 
   if (!article) {

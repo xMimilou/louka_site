@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, X, GripVertical } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
 import type { Workflow } from '@/lib/types'
 import ConfirmModal from '@/components/admin/ConfirmModal'
 import { toast } from '@/components/admin/Toast'
@@ -27,13 +26,9 @@ export default function WorkflowsPage() {
   const fetchWorkflows = useCallback(async () => {
     setLoading(true)
     try {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('workflows')
-        .select('*')
-        .order('sort_order')
-      if (error) throw error
-      setWorkflows(data || [])
+      const res = await fetch('/api/admin/workflows')
+      if (!res.ok) throw new Error()
+      setWorkflows(await res.json())
     } catch {
       toast.error('Erreur lors du chargement')
     } finally {
@@ -67,20 +62,21 @@ export default function WorkflowsPage() {
     }
     setSaving(true)
     try {
-      const supabase = createClient()
       if (isNew) {
-        const { error } = await supabase.from('workflows').insert({
-          ...editTarget,
-          created_at: new Date().toISOString(),
+        const res = await fetch('/api/admin/workflows', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editTarget),
         })
-        if (error) throw error
+        if (!res.ok) throw new Error()
         toast.success('Workflow créé !')
       } else {
-        const { error } = await supabase
-          .from('workflows')
-          .update(editTarget)
-          .eq('id', editTarget.id)
-        if (error) throw error
+        const res = await fetch(`/api/admin/workflows/${editTarget.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editTarget),
+        })
+        if (!res.ok) throw new Error()
         toast.success('Workflow mis à jour !')
       }
       closeEdit()
@@ -95,9 +91,8 @@ export default function WorkflowsPage() {
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from('workflows').delete().eq('id', deleteTarget.id)
-      if (error) throw error
+      const res = await fetch(`/api/admin/workflows/${deleteTarget.id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
       toast.success('Workflow supprimé')
       setDeleteTarget(null)
       fetchWorkflows()
@@ -108,12 +103,12 @@ export default function WorkflowsPage() {
 
   const handleToggleVisible = async (workflow: Workflow) => {
     try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('workflows')
-        .update({ visible: !workflow.visible })
-        .eq('id', workflow.id)
-      if (error) throw error
+      const res = await fetch(`/api/admin/workflows/${workflow.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...workflow, visible: !workflow.visible }),
+      })
+      if (!res.ok) throw new Error()
       toast.success(workflow.visible ? 'Workflow masqué' : 'Workflow affiché sur le site')
       fetchWorkflows()
     } catch {

@@ -3,23 +3,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, Copy, Trash2, FileText, File, FileSpreadsheet, Archive } from 'lucide-react'
-import { createClient } from '@/lib/supabase'
 import ConfirmModal from '@/components/admin/ConfirmModal'
 import { toast } from '@/components/admin/Toast'
 
 type FileType = 'all' | 'json' | 'python' | 'excel' | 'pdf' | 'zip' | 'image' | 'other'
 
-interface SupabaseFile {
+interface LocalFile {
   name: string
-  id: string
-  updated_at: string
+  size: number
   created_at: string
-  last_accessed_at: string
-  metadata: {
-    size: number
-    mimetype: string
-    cacheControl: string
-  }
 }
 
 function getFileType(name: string): FileType {
@@ -70,24 +62,19 @@ function formatDate(dateStr: string): string {
 }
 
 export default function FilesPage() {
-  const [files, setFiles] = useState<SupabaseFile[]>([])
+  const [files, setFiles] = useState<LocalFile[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [filter, setFilter] = useState<FileType>('all')
-  const [deleteTarget, setDeleteTarget] = useState<SupabaseFile | null>(null)
-  const BUCKET = 'uploads'
+  const [deleteTarget, setDeleteTarget] = useState<LocalFile | null>(null)
 
   const fetchFiles = useCallback(async () => {
     setLoading(true)
     try {
-      const supabase = createClient()
-      const { data, error } = await supabase.storage.from(BUCKET).list('', {
-        limit: 100,
-        sortBy: { column: 'created_at', order: 'desc' },
-      })
-      if (error) throw error
-      setFiles((data || []).filter((f) => f.name !== '.emptyFolderPlaceholder') as SupabaseFile[])
+      const res = await fetch('/api/admin/upload')
+      if (!res.ok) throw new Error()
+      setFiles(await res.json())
     } catch {
       toast.error('Erreur lors du chargement des fichiers')
     } finally {
@@ -101,24 +88,19 @@ export default function FilesPage() {
     const file = acceptedFiles[0]
     if (!file) return
     setUploading(true)
-    setUploadProgress(10)
+    setUploadProgress(30)
 
     try {
-      const supabase = createClient()
-      const ext = file.name.split('.').pop()
-      const base = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-z0-9]/gi, '-').toLowerCase()
-      const uniqueName = `${base}-${Date.now()}.${ext}`
-
-      setUploadProgress(40)
-      const { error } = await supabase.storage.from(BUCKET).upload(uniqueName, file, { upsert: false })
-      if (error) throw error
-
+      const formData = new FormData()
+      formData.append('file', file)
+      setUploadProgress(60)
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData })
+      if (!res.ok) throw new Error()
       setUploadProgress(100)
       toast.success(`"${file.name}" uploadé avec succès !`)
       fetchFiles()
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erreur lors de l'upload"
-      toast.error(msg)
+    } catch {
+      toast.error("Erreur lors de l'upload")
     } finally {
       setUploading(false)
       setUploadProgress(0)
@@ -132,18 +114,20 @@ export default function FilesPage() {
   })
 
   const handleCopyUrl = async (fileName: string) => {
-    const supabase = createClient()
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(fileName)
-    await navigator.clipboard.writeText(data.publicUrl)
+    const url = `${window.location.origin}/uploads/${fileName}`
+    await navigator.clipboard.writeText(url)
     toast.success('URL copiée dans le presse-papier !')
   }
 
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      const supabase = createClient()
-      const { error } = await supabase.storage.from(BUCKET).remove([deleteTarget.name])
-      if (error) throw error
+      const res = await fetch('/api/admin/upload', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: deleteTarget.name }),
+      })
+      if (!res.ok) throw new Error()
       toast.success('Fichier supprimé')
       setDeleteTarget(null)
       fetchFiles()
@@ -152,12 +136,8 @@ export default function FilesPage() {
     }
   }
 
-  const filteredFiles = files.filter((f) => {
-    if (filter === 'all') return true
-    return getFileType(f.name) === filter
-  })
-
-  const totalSize = files.reduce((sum, f) => sum + (f.metadata?.size || 0), 0)
+  const filteredFiles = files.filter((f) => filter === 'all' || getFileType(f.name) === filter)
+  const totalSize = files.reduce((sum, f) => sum + (f.size || 0), 0)
 
   const filterTabs: { value: FileType; label: string }[] = [
     { value: 'all', label: 'Tous' },
@@ -171,7 +151,6 @@ export default function FilesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 className="font-syne font-bold text-admin-text text-xl">Gestionnaire de Fichiers</h2>
@@ -181,13 +160,10 @@ export default function FilesPage() {
         </div>
       </div>
 
-      {/* Upload zone */}
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200 ${
-          isDragActive
-            ? 'border-accent bg-accent/5'
-            : 'border-admin-border hover:border-accent/50 hover:bg-admin-surface'
+          isDragActive ? 'border-accent bg-accent/5' : 'border-admin-border hover:border-accent/50 hover:bg-admin-surface'
         } ${uploading ? 'pointer-events-none' : ''}`}
       >
         <input {...getInputProps()} />
@@ -195,10 +171,7 @@ export default function FilesPage() {
           <div className="space-y-4">
             <div className="inline-block w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
             <div className="w-64 mx-auto bg-admin-border rounded-full h-1.5">
-              <div
-                className="bg-accent h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
-              />
+              <div className="bg-accent h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
             </div>
             <p className="font-dm text-sm text-admin-muted">Upload en cours...</p>
           </div>
@@ -218,16 +191,13 @@ export default function FilesPage() {
         )}
       </div>
 
-      {/* Filters */}
       <div className="flex gap-1 p-1 bg-admin-bg border border-admin-border rounded-xl w-fit">
         {filterTabs.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setFilter(tab.value)}
             className={`px-3 py-1.5 rounded-lg text-xs font-dm transition-all duration-200 ${
-              filter === tab.value
-                ? 'bg-admin-surface text-admin-text font-medium'
-                : 'text-admin-muted hover:text-admin-text'
+              filter === tab.value ? 'bg-admin-surface text-admin-text font-medium' : 'text-admin-muted hover:text-admin-text'
             }`}
           >
             {tab.label}
@@ -235,7 +205,6 @@ export default function FilesPage() {
         ))}
       </div>
 
-      {/* Files table */}
       <div className="rounded-xl border border-admin-border overflow-hidden">
         {loading ? (
           <div className="p-12 text-center">
@@ -264,7 +233,7 @@ export default function FilesPage() {
               {filteredFiles.map((file) => {
                 const type = getFileType(file.name)
                 return (
-                  <tr key={file.id || file.name} className="hover:bg-admin-surface transition-colors">
+                  <tr key={file.name} className="hover:bg-admin-surface transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <FileIcon type={type} />
@@ -272,10 +241,10 @@ export default function FilesPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
-                      <span className="font-mono text-xs text-admin-muted">{formatBytes(file.metadata?.size || 0)}</span>
+                      <span className="font-mono text-xs text-admin-muted">{formatBytes(file.size)}</span>
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
-                      <span className="font-dm text-xs text-admin-muted">{formatDate(file.created_at || file.updated_at)}</span>
+                      <span className="font-dm text-xs text-admin-muted">{formatDate(file.created_at)}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className={`font-mono text-[10px] px-2 py-0.5 rounded-full border uppercase ${typeBadge[type]}`}>

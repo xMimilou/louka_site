@@ -1,6 +1,4 @@
-import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { createClient, isSupabaseConfigured } from '@/lib/supabase-server'
 import Sidebar from '@/components/admin/Sidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
 import { Toaster } from 'react-hot-toast'
@@ -10,13 +8,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const pathname = headersList.get('x-pathname') ?? ''
   const isLoginPage = pathname === '/admin/login'
 
-  if (!isLoginPage && isSupabaseConfigured()) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/admin/login')
-  }
-
-  // Render login page without sidebar/header
   if (isLoginPage) {
     return <>{children}</>
   }

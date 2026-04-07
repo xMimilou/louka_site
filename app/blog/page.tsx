@@ -1,5 +1,6 @@
-import { createClient } from '@/lib/supabase-server'
+import pool from '@/lib/db'
 import type { Article } from '@/lib/types'
+import { parseArticle } from '@/lib/db-parse'
 import Link from 'next/link'
 import Nav from '@/components/public/Nav'
 import Footer from '@/components/public/Footer'
@@ -35,16 +36,11 @@ export default async function BlogPage() {
   let articles: Article[] = staticArticles
 
   try {
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://your-project.supabase.co') {
-      const supabase = await createClient()
-      const { data } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('status', 'published')
-        .order('published_at', { ascending: false })
-
-      if (data && data.length > 0) articles = data
-    }
+    const [rows] = await pool.execute(
+      'SELECT * FROM articles WHERE status = ? ORDER BY published_at DESC',
+      ['published']
+    ) as [Record<string, unknown>[], unknown]
+    if (rows.length > 0) articles = rows.map(parseArticle)
   } catch {
     // Use static fallback
   }

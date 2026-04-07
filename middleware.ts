@@ -1,52 +1,40 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { jwtVerify } from 'jose'
+
+const SECRET = new TextEncoder().encode(
+  process.env.SESSION_SECRET ?? 'louka-site-secret-please-change-in-prod'
+)
+const COOKIE_NAME = 'louka_admin_session'
 
 export async function middleware(request: NextRequest) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
-
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
   const isLoginRoute = request.nextUrl.pathname === '/admin/login'
 
-  // If Supabase is not configured yet, allow access to login page and block everything else
-  if (!supabaseUrl || !supabaseKey) {
-    if (isAdminRoute && !isLoginRoute) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
-    }
-    return NextResponse.next({ request })
-  }
+  if (!isAdminRoute) return NextResponse.next()
 
-  // Pass pathname to layouts via header
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', request.nextUrl.pathname)
 
-  let supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
+  const token = request.cookies.get(COOKIE_NAME)?.value
 
-  const supabase = createServerClient(supabaseUrl, supabaseKey, {
-    cookies: {
-      getAll() { return request.cookies.getAll() },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-        supabaseResponse = NextResponse.next({ request })
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
-        )
-      },
-    },
-  })
+  if (token) {
+    try {
+      await jwtVerify(token, SECRET)
+      if (isLoginRoute) {
+        return NextResponse.redirect(new URL('/admin/articles', request.url))
+      }
+      return NextResponse.next({ request: { headers: requestHeaders } })
+    } catch {
+      // Invalid/expired token — fall through to redirect
+    }
+  }
 
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (isAdminRoute && !isLoginRoute && !user) {
+  if (!isLoginRoute) {
     return NextResponse.redirect(new URL('/admin/login', request.url))
   }
 
-  if (isLoginRoute && user) {
-    return NextResponse.redirect(new URL('/admin/articles', request.url))
-  }
-
-  return supabaseResponse
+  return NextResponse.next({ request: { headers: requestHeaders } })
 }
 
 export const config = {
