@@ -55,10 +55,10 @@ export default function Footer({ platforms = [] }: FooterProps) {
               Système 90
             </Link>
             <Link
-              href="/ressources"
+              href="/blog"
               className="text-text-muted text-xs font-dm hover:text-text-primary transition-colors"
             >
-              Ressources
+              Blog
             </Link>
             <Link
               href="/a-propos"

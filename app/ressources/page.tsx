@@ -1,3 +1,4 @@
+import { permanentRedirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import type { Article } from '@/lib/types'
 import Link from 'next/link'
@@ -70,6 +71,7 @@ const staticArticles: Article[] = [
 ]
 
 export default async function RessourcesPage() {
+  permanentRedirect('/blog')
   let articles: Article[] = staticArticles
 
   try {
