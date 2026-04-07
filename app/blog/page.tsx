@@ -25,9 +25,9 @@ const staticArticles: Article[] = [
     ext_label: null,
     status: 'published',
     downloads: 0,
-    published_at: new Date().toISOString(),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    published_at: '2026-04-07T00:00:00.000Z',
+    created_at: '2026-04-07T00:00:00.000Z',
+    updated_at: '2026-04-07T00:00:00.000Z',
   },
 ]
 
@@ -79,7 +79,7 @@ export default async function BlogPage() {
               >
                 {article.cover_url && (
                   <div className="w-full h-40 rounded-xl overflow-hidden mb-5 bg-bg">
-                    <img src={article.cover_url} alt={article.title} className="w-full h-full object-cover" />
+                    <img src={article.cover_url} alt={article.title} className="w-full h-full object-cover" loading="lazy" />
                   </div>
                 )}
 
