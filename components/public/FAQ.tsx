@@ -35,6 +35,14 @@ const faqs = [
     q: 'Combien de temps avant de voir les premiers résultats ?',
     a: "Les premiers workflows sont livrés et opérationnels à J+14. Certains clients voient des gains dès J+7 sur les tâches prioritaires. La garantie porte sur 30 jours après la livraison finale.",
   },
+  {
+    q: 'Y a-t-il des coûts additionnels après le 1 497€ ?',
+    a: "Les workflows tournent sur votre propre compte n8n ou Make (~10 à 20€/mois selon le volume de tâches). Vous gardez le contrôle total — rien ne passe par moi. Si vous préférez zéro gestion, un retainer optionnel à 500€/mois est disponible pour que je maintienne et fasse évoluer le système à votre place.",
+  },
+  {
+    q: 'Pourquoi 1 497€ et pas moins ?',
+    a: "5h/sem économisées × 52 semaines = 260 heures par an. À 50€/h de valeur de votre temps, c'est 13 000€ récupérés. Le ROI est positif dès le 2e mois. Le prix reflète aussi le travail réel : audit, build sur-mesure, formation, et 76 jours de support garanti — pas un template vendu à 200 personnes.",
+  },
 ]
 
 export default function FAQ() {

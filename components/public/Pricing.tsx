@@ -136,11 +136,6 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Note hébergement */}
-        <p className="font-dm text-text-muted text-xs mb-20 opacity-60">
-          * L&apos;hébergement des automatisations (serveur, outils tiers) n&apos;est pas inclus. Comptez environ 10 à 20&nbsp;€/mois.
-        </p>
-
         {/* Process steps */}
         <div>
           <p className="font-mono text-xs text-accent tracking-[0.15em] uppercase mb-3">Comment ça marche</p>
