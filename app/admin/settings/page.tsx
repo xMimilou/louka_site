@@ -51,6 +51,36 @@ const sections: SettingsSection[] = [
       },
     ],
   },
+  {
+    title: 'Telegram',
+    fields: [
+      {
+        key: 'telegram_bot_token',
+        label: 'Bot Token',
+        placeholder: '123456789:AABBccDDeeFFggHH...',
+      },
+      {
+        key: 'telegram_channel_id',
+        label: 'Channel ID (ou chat ID)',
+        placeholder: '-1001234567890',
+      },
+    ],
+  },
+  {
+    title: 'Intégrations',
+    fields: [
+      {
+        key: 'anthropic_api_key',
+        label: 'Anthropic API Key',
+        placeholder: 'sk-ant-...',
+      },
+      {
+        key: 'stripe_secret_key',
+        label: 'Stripe Secret Key',
+        placeholder: 'sk_live_...',
+      },
+    ],
+  },
 ]
 
 const defaultValues: Record<string, string> = {
