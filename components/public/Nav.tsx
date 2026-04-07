@@ -62,11 +62,11 @@ export default function Nav() {
       >
         <div className="max-w-[1160px] mx-auto px-6 py-5 flex items-center justify-between">
           <a
-            href="#"
+            href="/"
             className="font-mono text-accent text-sm font-medium tracking-wider hover:shadow-glow transition-all duration-300"
-            aria-label="Retour en haut"
+            aria-label="Retour à l'accueil"
           >
-            [L.M]
+            Louka Millon
           </a>
 
           <div className="hidden md:flex items-center gap-3">
