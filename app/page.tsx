@@ -10,6 +10,7 @@ import Pricing from '@/components/public/Pricing'
 import Guarantee from '@/components/public/Guarantee'
 import FAQ from '@/components/public/FAQ'
 import EmailCapture from '@/components/public/EmailCapture'
+import NewsletterStrip from '@/components/public/NewsletterStrip'
 import Footer from '@/components/public/Footer'
 
 const staticPlatforms: PlatformLink[] = [
@@ -47,6 +48,7 @@ export default async function HomePage() {
         <Guarantee />
         <FAQ />
         <EmailCapture />
+        <NewsletterStrip />
       </main>
       <Footer platforms={platforms} />
       <CalendlyWidget />
