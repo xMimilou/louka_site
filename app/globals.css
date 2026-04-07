@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #0A0A0F;
+  --surface: #13131A;
+  --accent: #00D4FF;
+  --text: #F1F5F9;
+  --muted: #64748B;
+  --border: #1E293B;
+}
+
+[data-theme="light"] {
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --accent: #0284C7;
+  --text: #0F172A;
+  --muted: #64748B;
+  --border: #E2E8F0;
+}
+
+/* Tailwind color overrides for light theme */
+[data-theme="light"] .bg-bg          { background-color: #F8FAFC !important; }
+[data-theme="light"] .bg-surface     { background-color: #FFFFFF !important; }
+[data-theme="light"] .text-text-primary { color: #0F172A !important; }
+[data-theme="light"] .text-text-muted   { color: #64748B !important; }
+[data-theme="light"] .text-accent    { color: #0284C7 !important; }
+[data-theme="light"] .stroke-accent  { stroke: #0284C7 !important; }
+[data-theme="light"] .border-border  { border-color: #E2E8F0 !important; }
+[data-theme="light"] .border-accent  { border-color: #0284C7 !important; }
+[data-theme="light"] .bg-accent      { background-color: #0284C7 !important; }
+[data-theme="light"] .bg-accent\/10  { background-color: rgba(2,132,199,0.10) !important; }
+[data-theme="light"] .bg-accent\/5   { background-color: rgba(2,132,199,0.05) !important; }
+[data-theme="light"] .border-accent\/20 { border-color: rgba(2,132,199,0.20) !important; }
+[data-theme="light"] .border-accent\/30 { border-color: rgba(2,132,199,0.30) !important; }
+[data-theme="light"] .text-accent\/70   { color: rgba(2,132,199,0.70) !important; }
+[data-theme="light"] .shadow-glow    { box-shadow: 0 0 24px rgba(2,132,199,0.25) !important; }
+[data-theme="light"] .shadow-glow-lg { box-shadow: 0 0 40px rgba(2,132,199,0.35) !important; }
+
+/* Nav blur overlay in light mode */
+[data-theme="light"] .bg-bg\/80 { background-color: rgba(248,250,252,0.88) !important; }
+[data-theme="light"] .bg-bg\/97 { background-color: rgba(248,250,252,0.97) !important; }
+
+/* Noise overlay: invisible on white */
+[data-theme="light"] body::before { opacity: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 2px; }
+
+/* Noise overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+}
+
+/* Admin scrollbar override */
+.admin-scroll::-webkit-scrollbar { width: 6px; }
+.admin-scroll::-webkit-scrollbar-track { background: #0F1117; }
+.admin-scroll::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 3px; }

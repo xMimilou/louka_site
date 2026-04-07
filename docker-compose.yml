@@ -1,0 +1,10 @@
+services:
+  site:
+    image: louka-site:latest
+    container_name: louka-site
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
