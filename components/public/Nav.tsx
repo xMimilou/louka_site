@@ -46,7 +46,7 @@ export default function Nav() {
   const navLinks = [
     { href: '/systeme-90', label: 'Système 90' },
     { href: '/a-propos', label: 'À propos' },
-    { href: '/ressources', label: 'Ressources' },
+    { href: '/blog', label: 'Blog' },
   ]
 
   return (
