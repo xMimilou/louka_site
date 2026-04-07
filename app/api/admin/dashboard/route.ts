@@ -31,7 +31,10 @@ export async function GET() {
     articles_published: Number((articlesRow as Record<string, unknown>).n),
     tweets_published: Number((tweetsRow as Record<string, unknown>).n),
     payments_pending: Number((pendingRow as Record<string, unknown>).n),
-    recent_candidates: recentCandidates,
+    recent_candidates: (recentCandidates as Record<string, unknown>[]).map((r) => ({
+      ...r,
+      created_at: String(r.created_at),
+    })),
     funnel: (funnel as Record<string, unknown>[]).reduce((acc, r) => {
       acc[r.status as string] = Number(r.n)
       return acc
