@@ -21,5 +21,6 @@ export async function POST(req: NextRequest) {
     [id, body.content, scheduled, 0]
   )
   const [rows] = await pool.execute('SELECT * FROM tweets WHERE id = ?', [id]) as [Record<string, unknown>[], unknown]
+  if (!rows.length) return NextResponse.json({ error: 'Insert failed' }, { status: 500 })
   return NextResponse.json(parseTweet(rows[0]), { status: 201 })
 }

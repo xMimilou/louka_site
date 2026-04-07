@@ -28,5 +28,6 @@ export async function POST(req: NextRequest) {
     'SELECT t.*, ca.name AS candidate_name, cl.name AS closer_name FROM tasks t LEFT JOIN candidates ca ON ca.id = t.candidate_id LEFT JOIN closers cl ON cl.id = t.closer_id WHERE t.id = ?',
     [id]
   ) as [Record<string, unknown>[], unknown]
+  if (!rows.length) return NextResponse.json({ error: 'Insert failed' }, { status: 500 })
   return NextResponse.json(parseTask(rows[0]), { status: 201 })
 }

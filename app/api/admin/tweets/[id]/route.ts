@@ -18,7 +18,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       : null
     await pool.execute(
       'UPDATE tweets SET content = ?, scheduled_at = ? WHERE id = ?',
-      [body.content, scheduled, id]
+      [body.content ?? null, scheduled, id]
     )
   }
 

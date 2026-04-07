@@ -15,5 +15,6 @@ export async function POST(req: NextRequest) {
   const id = crypto.randomUUID()
   await pool.execute('INSERT INTO closers (id, name, email) VALUES (?, ?, ?)', [id, name, email ?? null])
   const [rows] = await pool.execute('SELECT * FROM closers WHERE id = ?', [id]) as [Record<string, unknown>[], unknown]
+  if (!rows.length) return NextResponse.json({ error: 'Insert failed' }, { status: 500 })
   return NextResponse.json(parseCloser(rows[0]), { status: 201 })
 }
