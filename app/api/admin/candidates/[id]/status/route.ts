@@ -14,11 +14,11 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 
   // Auto-action: create pending payment when moved to 'gagne'
   if (status === 'gagne') {
-    const existing = await pool.execute(
+    const [existing] = await pool.execute(
       'SELECT id FROM payments WHERE candidate_id = ?',
       [id]
     ) as [Record<string, unknown>[], unknown]
-    if ((existing[0] as unknown[]).length === 0) {
+    if (existing.length === 0) {
       await pool.execute(
         'INSERT INTO payments (id, candidate_id, amount, currency, status) VALUES (?, ?, ?, ?, ?)',
         [crypto.randomUUID(), id, 149700, 'EUR', 'pending']
@@ -35,5 +35,6 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   )
 
   const [updated] = await pool.execute('SELECT * FROM candidates WHERE id = ?', [id]) as [Record<string, unknown>[], unknown]
+  if (!updated.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(parseCandidate(updated[0]))
 }

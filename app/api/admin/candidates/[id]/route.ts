@@ -44,6 +44,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   )
 
   const [rows] = await pool.execute('SELECT * FROM candidates WHERE id = ?', [id]) as [Record<string, unknown>[], unknown]
+  if (!rows.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(parseCandidate(rows[0]))
 }
 
