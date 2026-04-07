@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Système 90 — Automatisation sur-mesure en 90 jours | Louka Millon',
-  description: 'Workflows d\'automatisation construits et déployés en 4 semaines, puis formation complète. Garantie 5h/sem économisées ou on recommence gratuitement.',
+  description: 'Workflows d\'automatisation construits et déployés en 14 jours. Garanti : 5h/sem économisées ou révisions gratuites jusqu\'à y arriver.',
 }
 
 const offer = {
