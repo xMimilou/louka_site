@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 const stats = [
   { value: '7', label: 'Workflows\nen production' },
   { value: '5h+', label: 'Économisées par semaine\nobjectif garanti' },
@@ -23,7 +25,7 @@ const workflowSteps = [
 ]
 
 function WorkflowIcon({ type }: { type: string }) {
-  const icons: Record<string, React.ReactNode> = {
+  const icons: Record<string, ReactNode> = {
     table: (
       <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" />
