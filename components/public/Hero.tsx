@@ -34,8 +34,10 @@ export default function Hero({ platforms: _ }: HeroProps) {
         </h1>
 
         <p className="font-dm text-text-muted leading-relaxed max-w-[560px] mx-auto mb-10" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }}>
-          En 14 jours, vos workflows sont construits et déployés.
-          Dans les 90 jours, vous êtes autonome — ou je reviens gratuitement.
+          Je construis vos automatisations en 14 jours.
+          Vous gagnez au minimum{' '}
+          <span className="text-text-primary font-medium">5h par semaine</span>{' '}
+          — garanti ou je retravaille gratuitement.
         </p>
 
         {/* CTAs */}
