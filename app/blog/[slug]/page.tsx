@@ -152,9 +152,11 @@ export default async function BlogArticlePage({ params }: PageProps) {
                 <h3 className="font-syne font-bold text-text-primary mb-1">
                   {article.file_label || 'Télécharger la ressource'}
                 </h3>
-                <p className="font-dm text-text-muted text-sm">
-                  {article.downloads} personnes ont déjà téléchargé ce fichier.
-                </p>
+                {article.downloads > 0 && (
+                  <p className="font-dm text-text-muted text-sm">
+                    {article.downloads} personnes ont déjà téléchargé ce fichier.
+                  </p>
+                )}
               </div>
               <a
                 href={article.file_url}
