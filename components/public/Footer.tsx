@@ -42,12 +42,6 @@ export default function Footer({ platforms = [] }: FooterProps) {
             className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2"
             aria-label="Liens de pied de page"
           >
-            <a
-              href="#tarifs"
-              className="text-text-muted text-xs font-dm hover:text-text-primary transition-colors"
-            >
-              Offre
-            </a>
             <Link
               href="/systeme-90"
               className="text-text-muted text-xs font-dm hover:text-text-primary transition-colors"
