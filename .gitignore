@@ -1,6 +1,9 @@
 # Claude Code local config
 .claude/
 
+# Visual brainstorming sessions
+.superpowers/
+
 # Dependencies
 node_modules/
 
